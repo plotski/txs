@@ -258,6 +258,13 @@ def _samples(args):
         if not args.dry_run:
             cmd = [__name__, '-s', args.source, 'compare', samples_dir]
             print(f'To compare settings visually run:\n{utils.cmd2str(cmd)}')
+            try:
+                answer = input(f'Do you want to compare samples now? [y/n] ')
+            except KeyboardInterrupt:
+                pass
+            else:
+                if answer.lower() == 'y':
+                    utils.compare_samples(args.source, samples_dir)
 
 
 def _compare(args):

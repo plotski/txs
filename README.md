@@ -1,6 +1,6 @@
 **txs** (**t**est **x**264 **s**ettings) is a command line tool that can
 generate different combinations of x264 settings and make short test encodings
-with [ffmpeg](ffmpeg.org). It also comes with a Lua script for
+with [ffmpeg](https://ffmpeg.org). It also comes with a Lua script for
 [mpv](https://mpv.io) that allows you to visually compare the test encodes and
 find the best one based on quality, estimated file size and estimated encoding
 time. It looks like this:

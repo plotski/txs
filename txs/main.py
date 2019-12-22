@@ -107,8 +107,6 @@ def run():
         prog=__name__,
         formatter_class=MyHelpFormatter,
         description='Generate and compare x264 test encodings with different settings')
-    argparser.add_argument('-s', '--source',
-                           help='Path to original video')
     argparser.add_argument('-r', '--range', nargs=2, default=['5:00', '10'], metavar=('START', 'DURATION'),
                            help=('Time range in original video; '
                                  'e.g. "10:00 60" means "from 10 minutes to 11 minutes"'))
@@ -133,7 +131,9 @@ def run():
     argparser_samples = subparsers.add_parser(
         'samples',
         help='Generate samples with different settings',
-        description='Compare previously generated samples')
+        description='Generate samples with different settings')
+    argparser_samples.add_argument('source',
+                                   help='Path to original video')
     argparser_samples.add_argument('-xs', '--sample-settings', nargs='+', default=[],
                                    help='x264 settings to test; values are separated with "/"')
     argparser_samples.set_defaults(func=_samples)
@@ -177,6 +177,7 @@ def run():
                 '     border_color=101010\n'
                 '     estimates_file=./estimates\n'
         ))
+
     argparser_compare.add_argument('samples',
                                    help='Directory that contains the samples')
     argparser_compare.add_argument('-p', '--playlist-size', default=None,
@@ -191,6 +192,8 @@ def run():
         'bframes',
         help='Generate test encode and show consecutive B-frames percentages',
         description='Generate test encode and show consecutive B-frames percentages')
+    argparser_bframes.add_argument('source',
+                                   help='Path to original video')
     argparser_bframes.add_argument('-b', '--bframes', default='16',
                                    help='Maximum number of consecutive B-frames in test encode')
     argparser_bframes.add_argument('-a', '--b-adapt', default='2',
@@ -215,6 +218,13 @@ def _samples(args):
     print(f'Samples directory: {samples_dir}')
     if not args.dry_run:
         utils.mkdir(samples_dir)
+        # Extract range from original into separate file
+        excerpt_path = os.path.join(samples_dir, f'{title}.original@{"-".join(args.range)}.mkv')
+        if not os.path.exists(excerpt_path):
+            ffmpeg.encode(args.source, dest=excerpt_path,
+                          start=args.range[0], stop=args.range[1],
+                          topic=f'  Extracting range {args.range[0]} - {args.range[1]}',
+                          create_logfile=False)
 
     total_secs = ffmpeg.duration(args.source)
     estimates_file = os.path.join(samples_dir, args.estimates_file)
@@ -229,12 +239,9 @@ def _samples(args):
             print(f'Sample {i}/{len(sample_settings)}: '
                   f'{utils.settings2str(diff_settings, escape=False)}')
             if not args.dry_run and (args.overwrite or not os.path.exists(dest)):
-                print(f'  Encoding: ', end='')
                 start_time = time.monotonic()
-                ffmpeg.encode(args.source, dest, settings,
-                              start=args.range[0], stop=args.range[1])
+                ffmpeg.encode(excerpt_path, dest, settings, topic='  Encoding')
                 enc_time = time.monotonic() - start_time
-                print()
                 sample_secs = ffmpeg.duration(dest)
                 est_time = enc_time * total_secs / sample_secs
                 est_size = os.path.getsize(dest) * total_secs / sample_secs

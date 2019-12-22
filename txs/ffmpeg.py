@@ -58,28 +58,45 @@ def duration(filepath):
     info = _get_video_info(filepath)
     return float(info['format']['duration'])
 
-def encode(source, dest, settings, start, stop):
-    logfile = utils.logfile(dest)
-    x264opts = utils.settings2str(settings, escape=True)
-    cmd = ['ffmpeg', '-hide_banner', '-nostdin', '-report',
-           '-y', '-ss', start, '-i', f'file:{source}', '-to', stop,
-           '-c:v', 'libx264', '-x264opts', x264opts,
-           '-c:a', 'copy',
-           f'file:{dest}']
+def encode(source, dest, settings=None, start=None, stop=None, topic=None, create_logfile=True):
     env = os.environ.copy()
-    env['FFREPORT'] = 'file=%s:level=40' % (logfile.replace(':', '\\:'),)
+    cmd = ['ffmpeg', '-hide_banner', '-nostdin', '-y']
+    if create_logfile:
+        cmd.extend(('-report',))
+        env['FFREPORT'] = 'file=%s:level=40' % (utils.logfile(dest).replace(':', '\\:'),)
+    if start is not None:
+        cmd.extend(('-ss', start))
+    cmd.extend(('-i', f'file:{source}'))
+    if stop is not None:
+        cmd.extend(('-t', stop))
+    if settings is not None:
+        cmd.extend(('-c:v', 'libx264',
+                    '-x264opts', utils.settings2str(settings, escape=True)))
+    else:
+        cmd.extend(('-c:v', 'copy'))
+    cmd.extend(('-c:a', 'copy'))
+    cmd.extend((
+        # Encoding excerpts often results in "Too many packets buffered for
+        # output stream" errors and increasing the muxing queue prevents
+        # them.
+        '-max_muxing_queue_size', '1024',
+        f'file:{dest}'))
 
     # Example ffmpeg output:
     # frame=   49 fps= 12 q=24.0 size=     482kB time=00:00:02.08 bitrate=1895.5kbits/s speed=0.527x
     regex = re.compile(r'fps\s*=\s*([\d.]+).*?time\s*=\s*([\d:\.]+).*?speed=([\d\.]+)')
-    status_length = 39
+    status_length = 40
     def handle_stderr(line):
         match = regex.search(line)
         if match:
             fps, time, speed = match.group(1, 2, 3)
-            print(f'fps={float(fps):5.1f} time={time} speed={float(speed):1.3f}x', end='', flush=True)
+            print(f'fps={float(fps):6.1f} time={time} speed={float(speed):1.3f}x', end='', flush=True)
             print('\b'*status_length, end='')
+
+    if topic is not None:
+        print(f'{topic}: ', end='')
     _run(*cmd, env=env, stderr_callback=handle_stderr)
+    print()
 
 def bframes(logfile):
     values = []

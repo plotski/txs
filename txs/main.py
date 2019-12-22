@@ -134,7 +134,7 @@ def run():
         'samples',
         help='Generate samples with different settings',
         description='Generate samples with different settings')
-    argparser_samples.add_argument('-xs', '--sample-settings', nargs='+', default=[],
+    argparser_samples.add_argument('-xs', '--sample-settings', nargs='+', default=[], metavar='SETTINGS',
                                    help='x264 settings to test; values are separated with "/"')
     argparser_samples.set_defaults(func=_samples)
 

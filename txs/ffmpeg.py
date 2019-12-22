@@ -85,13 +85,16 @@ def encode(source, dest, settings=None, start=None, stop=None, topic=None, creat
     # Example ffmpeg output:
     # frame=   49 fps= 12 q=24.0 size=     482kB time=00:00:02.08 bitrate=1895.5kbits/s speed=0.527x
     regex = re.compile(r'fps\s*=\s*([\d.]+).*?time\s*=\s*([\d:\.]+).*?speed=([\d\.]+)')
-    status_length = 40
     def handle_stderr(line):
         match = regex.search(line)
         if match:
             fps, time, speed = match.group(1, 2, 3)
-            print(f'fps={float(fps):6.1f} time={time} speed={float(speed):1.3f}x', end='', flush=True)
-            print('\b'*status_length, end='')
+            parts = (f'fps={float(fps):.1f}'.ljust(10),
+                     f'time={time}'.ljust(16),
+                     f'speed={float(speed):.3f}x'.ljust(13))
+            status = ' '.join(parts)
+            print(' '.join(parts), end='', flush=True)
+            print('\b'*len(status), end='')
 
     if topic is not None:
         print(f'{topic}: ', end='')

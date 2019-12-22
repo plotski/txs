@@ -256,8 +256,9 @@ def _samples(args):
                     print(f'  Estimated encoding time: {est[key]["time_str"]}')
                     print(f'     Estimated final size: {est[key]["size_str"]}')
     except KeyboardInterrupt:
-        print('\nAborted')
+        print('\n')
         utils.cleanup(dest)
+        utils.croak('Aborted')
     else:
         if not args.dry_run:
             cmd = [__name__, 'compare', samples_dir]
@@ -310,8 +311,9 @@ def _bframes(args):
                 ffmpeg.encode(args.source, dest, settings,
                               start=args.range[0], stop=args.range[1])
     except KeyboardInterrupt:
-        print('\nAborted')
+        print('\n')
         utils.cleanup(dest)
+        utils.croak('Aborted')
     else:
         if not args.dry_run:
             bframes = ffmpeg.bframes(utils.logfile(dest))

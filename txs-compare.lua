@@ -321,7 +321,7 @@ end
 -- Event handlers
 
 function store_current_playback_position(event, time_pos)
-   if time_pos ~= nil then
+   if time_pos ~= nil and time_pos > 0 then
       current_playback_position = time_pos
    end
 end

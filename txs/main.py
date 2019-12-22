@@ -261,7 +261,7 @@ def _samples(args):
         utils.cleanup(dest)
     else:
         if not args.dry_run:
-            cmd = [__name__, '-s', args.source, 'compare', samples_dir]
+            cmd = [__name__, 'compare', samples_dir]
             print(f'To compare settings visually run:\n{utils.cmd2str(cmd)}')
             try:
                 answer = input(f'Do you want to compare samples now? [y/n] ')

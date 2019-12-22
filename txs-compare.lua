@@ -5,7 +5,7 @@ local msg = require 'mp.msg'
 
 local o = {
    debug = false,
-   playlist_size = 5,
+   playlist_size = 2,
    font_size = 8,
    font_color = "FFFFFF",
    border_size = 1.0,

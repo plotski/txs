@@ -33,44 +33,49 @@ class MyHelpFormatter(argparse.HelpFormatter):
 
 
 TUTORIAL = f'''
-$ {__name__} -s source.mkv -r 25:00 10 -x crf=19:me=umh samples \\
-  -xs aq-strength=0.5/1.0:aq-mode=2/3:no-deblock
+This is a tutorial that should get you started. Run `{__name__} -h` and
+`{__name__} SUB-COMMAND -h` for more information.
 
-The above command creates all possible combinations of the values for
-"aq-strength", "aq-mode" and "no-deblock" in the directory
-"samples.source@25:00-10.aq-strength:aq-mode:no-deblock". These files are all 10
-seconds long and start at 20 minutes in source.mkv:
+    $ {__name__} -s source.mkv -r 25:00 10 -x crf=19:me=umh samples \\
+      -xs aq-strength=0.5/1.0:aq-mode=2/3:no-deblock
 
-source.sample@25:00-10.crf=19:me=umh:aq-strength=0.5:aq-mode=2.mkv
-source.sample@25:00-10.crf=19:me=umh:aq-strength=0.5:aq-mode=2:no-deblock.mkv
-source.sample@25:00-10.crf=19:me=umh:aq-strength=0.5:aq-mode=3.mkv
-source.sample@25:00-10.crf=19:me=umh:aq-strength=0.5:aq-mode=3:no-deblock.mkv
-source.sample@25:00-10.crf=19:me=umh:aq-strength=1.0:aq-mode=2.mkv
-source.sample@25:00-10.crf=19:me=umh:aq-strength=1.0:aq-mode=2:no-deblock.mkv
-source.sample@25:00-10.crf=19:me=umh:aq-strength=1.0:aq-mode=3.mkv
-source.sample@25:00-10.crf=19:me=umh:aq-strength=1.0:aq-mode=3:no-deblock.mkv
+The above command creates test encodes or samples with all possible combinations
+of the given values for "aq-strength", "aq-mode" and "no-deblock" in the
+directory "samples.source@25:00-10.aq-strength:aq-mode:no-deblock". The samples
+are all encoded with "crf=19:me=umh", they are all 10 seconds long and start at
+25 minutes in source.mkv:
 
-$ {__name__} -s source.mkv -r 25:00 10 -x crf=19:me=umh samples \\
-  -xs aq-strength=0.5/1.0 aq-mode=2/3
+    source.sample@25:00-10.crf=19:me=umh:aq-strength=0.5:aq-mode=2.mkv
+    source.sample@25:00-10.crf=19:me=umh:aq-strength=0.5:aq-mode=2:no-deblock.mkv
+    source.sample@25:00-10.crf=19:me=umh:aq-strength=0.5:aq-mode=3.mkv
+    source.sample@25:00-10.crf=19:me=umh:aq-strength=0.5:aq-mode=3:no-deblock.mkv
+    source.sample@25:00-10.crf=19:me=umh:aq-strength=1.0:aq-mode=2.mkv
+    source.sample@25:00-10.crf=19:me=umh:aq-strength=1.0:aq-mode=2:no-deblock.mkv
+    source.sample@25:00-10.crf=19:me=umh:aq-strength=1.0:aq-mode=3.mkv
+    source.sample@25:00-10.crf=19:me=umh:aq-strength=1.0:aq-mode=3:no-deblock.mkv
 
-Notice how -xs was given multiple sets of settings. This created the following
-samples:
+You can provide multiple sets of sample settings to limit the number of
+combinations:
 
-source.sample@25:00-10:crf=19:me=umh:aq-mode=2.mkv
-source.sample@25:00-10:crf=19:me=umh:aq-mode=3.mkv
-source.sample@25:00-10:crf=19:me=umh:aq-strength=0.5.mkv
-source.sample@25:00-10:crf=19:me=umh:aq-strength=1.0.mkv
+    $ {__name__} -s source.mkv -r 25:00 10 -x crf=19:me=umh samples \\
+      -xs aq-strength=0.5/1.0 aq-mode=2/3
+
+This creates the following samples:
+
+    source.sample@25:00-10:crf=19:me=umh:aq-mode=2.mkv
+    source.sample@25:00-10:crf=19:me=umh:aq-mode=3.mkv
+    source.sample@25:00-10:crf=19:me=umh:aq-strength=0.5.mkv
+    source.sample@25:00-10:crf=19:me=umh:aq-strength=1.0.mkv
 
 To compare encodes, use the "compare" subcommand:
 
-$ {__name__} -s source.mkv compare ./samples:orig@25:00-1.aq-strength:aq-mode
+    $ {__name__} -s source.mkv compare ./samples:orig@25:00-1.aq-strength:aq-mode
 
 This opens mpv in fullscreen mode with a playlist of samples. You can adjust the
 playlist size with the -p (--playlist-size) option. Switch between samples with
-"j" and "k". If you seek to a different time, it should be preserved during
-switching. (You can even switch while playing a sample.) You can also switch to
-the original source with "o", although seek time preservation doesn't work very
-well in that case.
+"j" and "k". If you seek to a different time, it is preserved. (You can even
+switch while playing a sample.) You can also switch to the original source with
+"o", although seek time preservation doesn't work very well in that case.
 
 If one sample is the best in the current playlist, press "b" to unload all other
 samples and fill the playlist again. The best sample is kept in the playlist.
@@ -84,22 +89,8 @@ If all samples in the current playlist are equal, press "e" to stash them. The
 playlist is filled with new samples. Once you have seen all samples at least
 once, previously stashed samples are loaded again.
 
-This process ends when there is only one sample left.
-
 You can show/hide the playlist with "`".
-
-Run "{__name__} compare -h" for a list of configuration options and key
-bindings.
-
-$ {__name__} -s source.mkv -r 2:00 90 -x crf=19:me=umh:trellis=2 bframes -b 10
-
-This command will make a test encoding and show you the "consecutive B-frames"
-line from ffmpeg's output in a slightly more readable way.
-
-For the test encoding, the given settings are used but optimized for speed. For
-example, crf will be forced to 51 because it doesn't affect bframes percentages
-and it's faster.
-'''
+'''.strip()
 
 
 def run():
@@ -191,7 +182,10 @@ def run():
     argparser_bframes = subparsers.add_parser(
         'bframes',
         help='Generate test encode and show consecutive B-frames percentages',
-        description='Generate test encode and show consecutive B-frames percentages')
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=('Generate test encode and show consecutive B-frames percentages\n\n'
+                     'The settings given by --x264-settings are used but are optimized\n'
+                     'for speed, e.g. crf=51.'))
     argparser_bframes.add_argument('-b', '--bframes', default='16',
                                    help='Maximum number of consecutive B-frames in test encode')
     argparser_bframes.add_argument('-a', '--b-adapt', default='2',

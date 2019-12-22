@@ -53,11 +53,12 @@ def mkdir(path):
     if not os.path.isdir(path):
         croak(f'Not a directory: {path}')
 
-def cleanup(dest):
-    for file in (dest, logfile(dest)):
-        if os.path.exists(file):
-            print(f'Deleting {file}')
-            os.remove(file)
+def cleanup(*filepaths):
+    for filepath in filepaths:
+        for file in (filepath, logfile(filepath)):
+            if os.path.exists(filepath):
+                print(f'Deleting {filepath}')
+                os.remove(filepath)
 
 
 def parse_settings(*strings, default_value=None):

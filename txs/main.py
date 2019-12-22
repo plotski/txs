@@ -107,6 +107,8 @@ def run():
         prog=__name__,
         formatter_class=MyHelpFormatter,
         description='Generate and compare x264 test encodings with different settings')
+    argparser.add_argument('-s', '--source',
+                           help='Path to original video')
     argparser.add_argument('-r', '--range', nargs=2, default=['5:00', '10'], metavar=('START', 'DURATION'),
                            help=('Time range in original video; '
                                  'e.g. "10:00 60" means "from 10 minutes to 11 minutes"'))
@@ -132,8 +134,6 @@ def run():
         'samples',
         help='Generate samples with different settings',
         description='Generate samples with different settings')
-    argparser_samples.add_argument('source',
-                                   help='Path to original video')
     argparser_samples.add_argument('-xs', '--sample-settings', nargs='+', default=[],
                                    help='x264 settings to test; values are separated with "/"')
     argparser_samples.set_defaults(func=_samples)
@@ -192,8 +192,6 @@ def run():
         'bframes',
         help='Generate test encode and show consecutive B-frames percentages',
         description='Generate test encode and show consecutive B-frames percentages')
-    argparser_bframes.add_argument('source',
-                                   help='Path to original video')
     argparser_bframes.add_argument('-b', '--bframes', default='16',
                                    help='Maximum number of consecutive B-frames in test encode')
     argparser_bframes.add_argument('-a', '--b-adapt', default='2',

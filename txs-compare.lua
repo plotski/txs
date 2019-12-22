@@ -21,10 +21,7 @@ local settings = {}               -- Map file paths to list of encoding settings
 local est_times = {}              -- Map file paths to estimated encoding time
 local est_sizes = {}              -- Map file paths to estimated final size
 local original = nil              -- Source video
-local original_offset_str = nil   -- Time range offset of samples in source video (string)
-local original_offset_secs = nil  -- Time range offset of samples in source video (seconds)
 local current_playback_position = nil
-local current_playback_position_file = nil
 local longest_settings_string = nil
 
 
@@ -95,13 +92,12 @@ function declare_better()
    if #samples > 1 then
       local filepath = mp.get_property('path')
       dbg('Declaring better:', filepath)
-      set_current_playback_position()
       for _,filepath_ in playlist_iter() do
          if filepath_ ~= filepath then
             remove_sample({filepath=filepath_})
          end
       end
-      info('Better:', filepath)
+      info('Best:', filepath)
       fill_playlist({done_callback=playlist_next})
    end
 end
@@ -112,10 +108,9 @@ function declare_worse(quiet)
    if #samples > 1 then
       local filepath = mp.get_property('path')
       dbg('Declaring worse:', filepath)
-      set_current_playback_position()
       if filepath ~= nil and filepath ~= original then
          remove_sample({filepath=filepath, refill=true})
-         info('Worse:', filepath)
+         info('Worst:', filepath)
       end
    end
 end
@@ -126,7 +121,6 @@ function declare_garbage()
    if #samples > 1 then
       local filepath = mp.get_property('path')
       dbg('Declaring garbage:', filepath)
-      set_current_playback_position()
       if filepath ~= nil and filepath ~= original then
          remove_sample({filepath=filepath, refill=true, delete_file=true})
          info('Deleted:', filepath)
@@ -138,7 +132,6 @@ end
 -- fill_playlist() will reload them when `samples` is empty.
 function declare_equal()
    if #samples > 1 then
-      set_current_playback_position()
       -- Store current playlist
       local equals = {}
       info('Equals:')
@@ -261,7 +254,6 @@ local toggle_original_playlist_pos = nil
 function toggle_original()
    if original ~= nil then
       if mp.get_property('path') ~= original then
-         set_current_playback_position({to_original=true})
          -- Save current playlist
          tmp_playlist = {}
          for _,filepath in playlist_iter() do
@@ -282,7 +274,6 @@ function toggle_original()
             f:write(filepath..'\n')
          end
          f:close()
-         set_current_playback_position({from_original=true})
          mp.commandv('loadlist', tmp_playlist_file)
          mp.set_property_number('playlist-pos', toggle_original_playlist_pos)
          os.remove(tmp_playlist_file)
@@ -294,7 +285,6 @@ end
 
 -- Play next sample, wrapping around end of the playlist.
 function playlist_next()
-   -- Select next playlist item, wrapping around end of playlist
    local max_pos = mp.get_property_number('playlist-count') - 1
    if max_pos > 0 then
       local cur_pos = mp.get_property_number('playlist-pos')
@@ -305,16 +295,13 @@ function playlist_next()
             next_pos = 0
          end
       end
-      set_current_playback_position()
       dbg('setting next playlist-pos:', next_pos)
       mp.set_property_number('playlist-pos', next_pos)
-      dbg('new playlist-pos:', mp.get_property_number('playlist-pos'))
    end
 end
 
 -- Play previous sample, wrapping around beginning of the playlist.
 function playlist_prev()
-   -- Select next playlist item, wrapping around end of playlist
    local max_pos = mp.get_property_number('playlist-count') - 1
    if max_pos > 0 then
       local cur_pos = mp.get_property_number('playlist-pos')
@@ -325,7 +312,6 @@ function playlist_prev()
             prev_pos = max_pos
          end
       end
-      set_current_playback_position()
       dbg('setting prev playlist-pos:', prev_pos)
       mp.set_property_number('playlist-pos', prev_pos)
    end
@@ -334,14 +320,17 @@ end
 
 -- Event handlers
 
+function store_current_playback_position(event, time_pos)
+   if time_pos ~= nil then
+      current_playback_position = time_pos
+   end
+end
+mp.observe_property('time-pos', 'native', store_current_playback_position)
+
 function on_file_loaded(event)
    local filepath = mp.get_property('path')
    if filepath ~= nil then
-      local dir, filename = utils.split_path(filepath)
-      ensure_absolute_path_in_samples(filepath, dir, filename)
-      maybe_set_original(filepath, filename)
-      maybe_set_original_offset()
-      maybe_seek_to_current_playback_position(filepath)
+      maybe_seek_to_current_playback_position()
       if info_is_visible() then
          show_info()
       end
@@ -349,80 +338,19 @@ function on_file_loaded(event)
 end
 mp.register_event('file-loaded', on_file_loaded)
 
--- Because samples are identified by absolute path, if the user provides a
--- sample with a relative path as CLI argument, we must remove it.
-function ensure_absolute_path_in_samples(filepath, dir, filename)
-   if is_sample(filename) then
-      if dir ~= mp.get_property('working-directory') .. '/' then
-         dbg('Removing sample with relative path:', filepath)
-         mp.commandv('playlist-remove', 0)
-         fill_playlist()
-      end
-   end
-end
-
--- If we know which file is the original, we can allow the user to quickly
--- switch to it with a single keypress, regardless of what's in the playlist.
-function maybe_set_original(filepath, filename)
-   if original == nil then
-      if not is_sample(filename) then
-         original = filepath
-         dbg('Found original:', original)
-         -- Remove the original video from the playlist.  It should only be
-         -- displayed via keybinding.  Because `original` is only nil during
-         -- initialization, we can just remove the first item.
-         mp.commandv('playlist-remove', 0)
-         fill_playlist()
-      end
-   end
-end
-
--- If we know the samples' time range offset in the original, we can seek to the
--- same time in the original video if the it is played.
-function maybe_set_original_offset()
-   -- Walk through playlist to find any sample (i.e. not the original video),
-   -- which contains the offset.
-   if original_offset_str == nil or original_offset_secs == nil then
-      for _,filepath in playlist_iter() do
-         original_offset_str, original_offset_secs = get_sample_offset(filepath)
-         if original_offset_str ~= nil then
-            dbg('Found original offset:', original_offset_str, original_offset_secs)
-            break
-         end
-      end
-   end
-end
-
-function maybe_seek_to_current_playback_position(filepath)
-   local pos = get_current_playback_position(filepath)
+function maybe_seek_to_current_playback_position()
+   local pos = get_current_playback_position()
    if pos ~= nil then
       mp.commandv('seek', tostring(pos), 'absolute+exact')
    end
 end
 
-function get_current_playback_position(filepath)
-   if current_playback_position ~= nil and current_playback_position_file ~= filepath then
+function get_current_playback_position()
+   if current_playback_position ~= nil then
       local pos = current_playback_position
       current_playback_position = nil
       return pos
    end
-end
-
-function set_current_playback_position(args)
-   local args = args or {}
-   local pos = mp.get_property_number('time-pos')
-   -- If we're playing the original, we must subtract original_offset_secs
-   if pos~= nil and original_offset_secs ~= nil then
-      if args.from_original and args.to_original then
-         error('from_original and to_original cannot both be true')
-      elseif args.from_original then
-         pos = pos - original_offset_secs
-      elseif args.to_original then
-         pos = pos + original_offset_secs
-      end
-   end
-   current_playback_position = pos
-   current_playback_position_file = mp.get_property('path')
 end
 
 
@@ -559,31 +487,11 @@ function is_sample(filepath)
    return false
 end
 
-function get_sample_offset(filepath)
+function is_original(filepath)
    if filepath ~= nil then
       local dir, filename = utils.split_path(filepath)
-      local _, _, offset_str = string.find(filename, '%.sample@([%d:]+)%-[%d:]+%.')
-      if offset_str ~= nil and string.find(offset_str, ':') then
-         parts = split_string(offset_str, ':')
-         if #parts == 2 then
-            offset_secs = (tonumber(parts[1]) * 60) + tonumber(parts[2])
-         elseif #parts == 3 then
-            offset_secs = (tonumber(parts[1]) * 3600) + (tonumber(parts[2]) * 60) + tonumber(parts[3])
-         else
-            error('Invalid offset: '..offset_str)
-         end
-      else
-         offset_secs = tonumber(offset_str)
-      end
-      return offset_str, offset_secs
-   end
-end
-
-function assert_sample_range(filepath, range)
-   if filepath ~= nil then
-      local dir, filename = utils.split_path(filepath)
-      local range = range:gsub("([^%w])", "%%%1")
-      if string.find(filename, '%.sample@'..range..'%.') then
+      -- Example.original@5:00-10.mkv
+      if string.find(filename, '%.original@[%d:-]+%-[%d:]+%.mkv$') then
          return true
       end
    end
@@ -677,21 +585,26 @@ end
 
 --- Initialization
 
+-- Find original source video.
+function find_original()
+   local dir = mp.get_property('working-directory')
+   for _,filename in ipairs(utils.readdir(dir)) do
+      if is_original(filename) then
+         original = utils.join_path(dir, filename)
+         dbg('Found original:', original)
+         break
+      end
+   end
+end
+
 -- Find sample files.
 function find_samples()
    local dir = mp.get_property('working-directory')
-   local range = nil
    for _,filename in ipairs(utils.readdir(dir)) do
       local ext = filename:match('%.([%a%d]+)$')
       for _,ext_ in ipairs(video_file_extensions) do
-         if ext_ == ext then
-            -- Only find samples with identical time ranges
-            if range == nil then
-               range = filename:match('%.sample@([%d:]+%-[%d:]+)%.')
-               table.insert(samples, utils.join_path(dir, filename))
-            elseif assert_sample_range(filename, range) then
-               table.insert(samples, utils.join_path(dir, filename))
-            end
+         if ext_ == ext and is_sample(filename) then
+            table.insert(samples, utils.join_path(dir, filename))
          end
       end
    end
@@ -751,6 +664,7 @@ mp.set_property('mute', 'yes')
 mp.set_property('osd-fractions', 'yes')
 mp.set_property('osd-level', 2)
 
+find_original()
 find_samples()
 find_settings()
 read_estimates()

@@ -210,11 +210,7 @@ def update_estimates(estimates_file, diff_settings, est_time, est_size, settings
             values = ' / '.join(str(v) for v in tuple(values.values())[1:])
             f.write(f'{key.ljust(max_key_width)} / {values}\n')
 
-def compare_samples(original, sample_dir,
-                    debug=None,
-                    playlist_size=None,
-                    font_size=None,
-                    estimates_file=None):
+def compare_samples(sample_dir, debug=None, playlist_size=None, font_size=None, estimates_file=None):
     script_path_user = os.path.join(site.USER_BASE, f'share/{__name__}/lua/{__name__}-compare.lua')
     script_path_system = os.path.join(sys.prefix, f'share/{__name__}/lua/{__name__}-compare.lua')
     if os.path.exists(script_path_user):
@@ -227,8 +223,6 @@ def compare_samples(original, sample_dir,
         croak(f'Cannot find {__name__}-compare.lua')
 
     cmd = ['mpv', '--idle']
-    if original:
-        cmd.append(os.path.abspath(original))
     cmd.extend(('--script', script_path))
     scriptopts = []
     if debug:

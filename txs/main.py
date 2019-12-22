@@ -275,7 +275,7 @@ def _samples(args):
 
 
 def _compare(args):
-    utils.compare_samples(args.source, args.samples,
+    utils.compare_samples(args.samples,
                           debug=args.debug,
                           playlist_size=args.playlist_size,
                           font_size=args.font_size,

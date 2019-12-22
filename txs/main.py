@@ -213,10 +213,15 @@ def _samples(args):
         # Extract range from original into separate file
         excerpt_path = os.path.join(samples_dir, f'{title}.original@{"-".join(args.range)}.mkv')
         if not os.path.exists(excerpt_path):
-            ffmpeg.encode(args.source, dest=excerpt_path,
-                          start=args.range[0], stop=args.range[1],
-                          topic=f'  Extracting range {args.range[0]} - {args.range[1]}',
-                          create_logfile=False)
+            try:
+                ffmpeg.encode(args.source, dest=excerpt_path,
+                              start=args.range[0], stop=args.range[1],
+                              topic=f'  Extracting range {args.range[0]} - {args.range[1]}',
+                              create_logfile=False)
+            except KeyboardInterrupt:
+                print('\n')
+                utils.cleanup(excerpt_path)
+                utils.croak('Aborted')
 
     total_secs = ffmpeg.duration(args.source)
     estimates_file = os.path.join(samples_dir, args.estimates_file)

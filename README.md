@@ -67,14 +67,29 @@ once, previously stashed samples are loaded again.
 
 You can show/hide the playlist with "`".
 
+### Installation
 
-<!-- ### Installation -->
+Install [pipx](https://pipxproject.github.io/pipx/) with your distro's package
+manager or with pip:
 
-<!-- Install [pipx](https://pipxproject.github.io/pipx/) with your distro's package -->
-<!-- manager or with pip: -->
+    $ python3 -m pip install --user pipx
 
-<!--     $ python3 -m pip install --user pipx -->
+Then install txs with pipx:
 
-<!-- Then install txs with pipx: -->
+    $ pipx install txs
 
-<!--     $ pipx install --spec git+https://github.com/plotski/txs.git txs -->
+Upgrade:
+
+    $ pipx upgrade txs
+
+Install development version over current release:
+
+    $ pipx upgrade --spec git+https://github.com/plotski/txs.git txs
+
+Install development version without an existing txs installation:
+
+    $ pipx install --spec git+https://github.com/plotski/txs.git txs
+
+Uninstall:
+
+    $ pipx uninstall pipx

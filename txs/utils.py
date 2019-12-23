@@ -7,6 +7,10 @@ from collections import abc, defaultdict
 import shlex
 import subprocess
 import textwrap
+import termios, tty
+import platform
+import contextlib
+
 from . import utils
 from . import __name__
 
@@ -17,6 +21,32 @@ def croak(msg=None):
     if msg:
         error(msg)
     sys.exit(1)
+
+@contextlib.contextmanager
+def raw_mode_posix():
+    attrs = termios.tcgetattr(sys.stdin.fileno())
+    tty.setraw(sys.stdin.fileno())
+    try:
+        yield
+    finally:
+        termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, attrs)
+
+def dialog_yesno(question):
+    answer = ''
+    system = platform.system()
+    try:
+        if system == 'Linux':
+            print(f'{question} [y/n] ', end='', flush=True)
+            with raw_mode_posix():
+                while answer.lower() not in ('y', 'n'):
+                    answer = sys.stdin.read(1)
+            print(answer)
+        else:
+            while answer.lower() not in ('y', 'n'):
+                answer = input(f'{question} [y/n] ')
+    except KeyboardInterrupt:
+        pass
+    return answer.lower() == 'y'
 
 def wrap(string, width=80):
     return textwrap.fill(string, width=width)

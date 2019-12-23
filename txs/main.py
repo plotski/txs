@@ -5,7 +5,7 @@ import sys
 from collections import abc
 from . import utils
 from . import ffmpeg
-from . import __name__
+from . import __name__, __version__
 
 class MyHelpFormatter(argparse.HelpFormatter):
     def _get_help_string(self, action):
@@ -113,6 +113,8 @@ def run():
     argparser.add_argument('-e', '--estimates-file', default='./estimates', metavar='PATH',
                            help=('Where to store estimates of final size and encoding time;'
                                  'this path is relative to the samples directory'))
+    argparser.add_argument('--version', action='version', version=f'{__name__} {__version__}')
+
     subparsers = argparser.add_subparsers()
 
     argparser_tutorial = subparsers.add_parser(

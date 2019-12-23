@@ -659,8 +659,6 @@ mp.set_property('force-window', 'yes')
 mp.set_property('msg-level', 'all=no,txs_compare=trace')
 mp.set_property('pause', 'yes')
 mp.set_property('loop-file', 'yes')
-mp.set_property('sub', 'no')
-mp.set_property('mute', 'yes')
 mp.set_property('osd-fractions', 'yes')
 mp.set_property('osd-level', 2)
 

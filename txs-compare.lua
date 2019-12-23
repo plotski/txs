@@ -339,17 +339,8 @@ end
 mp.register_event('file-loaded', on_file_loaded)
 
 function maybe_seek_to_current_playback_position()
-   local pos = get_current_playback_position()
-   if pos ~= nil then
-      mp.commandv('seek', tostring(pos), 'absolute+exact')
-   end
-end
-
-function get_current_playback_position()
    if current_playback_position ~= nil then
-      local pos = current_playback_position
-      current_playback_position = nil
-      return pos
+      mp.commandv('seek', current_playback_position, 'absolute+exact')
    end
 end
 

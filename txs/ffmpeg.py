@@ -5,6 +5,15 @@ import re
 import pprint
 from . import utils
 
+if os.name == 'posix':
+    FFPROBE = 'ffprobe'
+    FFMPEG = 'ffmpeg'
+elif os.name == 'nt':
+    FFPROBE = 'ffprobe.exe'
+    FFMPEG = 'ffmpeg.exe'
+else:
+    raise RuntimeError('Unsupported os: {os.name!r}')
+
 def _run(*args, stdout_callback=None, stderr_callback=None, **kwargs):
     kwargs.update(stdout=subprocess.PIPE,
                   stderr=subprocess.PIPE,
@@ -49,7 +58,7 @@ def _as_json(string):
         utils.croak(e)
 
 def _get_video_info(filepath):
-    proc = _run('ffprobe', '-hide_banner',
+    proc = _run(FFPROBE, '-hide_banner',
                 '-show_format', '-show_streams',
                 '-of', 'json', filepath)
     return _as_json(proc.stdout.read())
@@ -60,7 +69,7 @@ def duration(filepath):
 
 def encode(source, dest, settings=None, start=None, stop=None, topic=None, create_logfile=True):
     env = os.environ.copy()
-    cmd = ['ffmpeg', '-hide_banner', '-nostdin', '-sn', '-y']
+    cmd = [FFMPEG, '-hide_banner', '-nostdin', '-sn', '-y']
     if create_logfile:
         cmd.extend(('-report',))
         env['FFREPORT'] = 'file=%s:level=40' % (utils.logfile(dest).replace(':', '\\:'),)

@@ -241,6 +241,13 @@ def update_estimates(estimates_file, diff_settings, est_time, est_size, settings
             values = ' / '.join(str(v) for v in tuple(values.values())[1:])
             f.write(f'{key.ljust(max_key_width)} / {values}\n')
 
+if os.name == 'posix':
+    MPV = 'mpv'
+elif os.name == 'nt':
+    MPV = 'mpv.exe'
+else:
+    raise RuntimeError('Unsupported os: {os.name!r}')
+
 def compare_samples(sample_dir, debug=None, playlist_size=None, font_size=None, estimates_file=None):
     script_path_user = os.path.join(site.USER_BASE, f'share/{__name__}/lua/{__name__}-compare.lua')
     script_path_system = os.path.join(sys.prefix, f'share/{__name__}/lua/{__name__}-compare.lua')
@@ -253,7 +260,7 @@ def compare_samples(sample_dir, debug=None, playlist_size=None, font_size=None, 
         error(f'No such file: {script_path_system}')
         croak(f'Cannot find {__name__}-compare.lua')
 
-    cmd = ['mpv', '--idle']
+    cmd = [MPV, '--idle']
     cmd.extend(('--script', script_path))
     scriptopts = []
     if debug:

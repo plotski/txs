@@ -8,7 +8,6 @@ import shlex
 import subprocess
 import textwrap
 import termios, tty
-import platform
 import contextlib
 
 from . import utils
@@ -33,9 +32,8 @@ def raw_mode_posix():
 
 def dialog_yesno(question):
     answer = ''
-    system = platform.system()
     try:
-        if system == 'Linux':
+        if os.name == 'posix':
             print(f'{question} [y/n] ', end='', flush=True)
             with raw_mode_posix():
                 while answer.lower() not in ('y', 'n'):

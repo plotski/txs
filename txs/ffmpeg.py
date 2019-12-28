@@ -60,7 +60,7 @@ def duration(filepath):
 
 def encode(source, dest, settings=None, start=None, stop=None, topic=None, create_logfile=True):
     env = os.environ.copy()
-    cmd = ['ffmpeg', '-hide_banner', '-nostdin', '-an', '-sn', '-y']
+    cmd = ['ffmpeg', '-hide_banner', '-nostdin', '-sn', '-y']
     if create_logfile:
         cmd.extend(('-report',))
         env['FFREPORT'] = 'file=%s:level=40' % (utils.logfile(dest).replace(':', '\\:'),)
@@ -74,6 +74,7 @@ def encode(source, dest, settings=None, start=None, stop=None, topic=None, creat
                     '-x264opts', utils.settings2str(settings, escape=True)))
     else:
         cmd.extend(('-c:v', 'copy'))
+    cmd.extend(('-c:a', 'copy'))
     cmd.extend((
         # Encoding excerpts often results in "Too many packets buffered for
         # output stream" errors and increasing the muxing queue prevents

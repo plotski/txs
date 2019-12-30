@@ -6,7 +6,7 @@ setup(
     version=txs.__version__,
     author=txs.__author__,
     author_email=txs.__author_email__,
-    description='Wrapper around ffmpeg and mpv that generates and compares x264 test encodes'),
+    description='Wrapper around ffmpeg and mpv that generates and compares x264 test encodes',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     url='http://github.com/plotski/txs',

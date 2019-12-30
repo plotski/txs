@@ -5,7 +5,7 @@ with [ffmpeg](https://ffmpeg.org). It also comes with a Lua script for
 find the best one based on quality, estimated file size and estimated encoding
 time. It looks like this:
 
-![Demo](demo.gif)
+![Demo](https://github.com/plotski/txs/blob/master/demo.gif?raw=true)
 
 This is the output of `txs tutorial`:
 

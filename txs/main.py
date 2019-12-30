@@ -34,62 +34,74 @@ class MyHelpFormatter(argparse.HelpFormatter):
 
 TUTORIAL = f'''
 This is a tutorial that should get you started. Run `{__name__} -h` and
-`{__name__} SUB-COMMAND -h` for more information.
+`{__name__} SUBCOMMAND -h` for more information.
 
     $ {__name__} -s source.mkv -r 25:00 10 -x crf=19:me=umh samples \\
-      -xs aq-strength=0.5/1.0:aq-mode=2/3:no-deblock
+      -xs subme=9/10:deblock=-2,-1/-3,-3:no-fast-pskip
 
 The above command creates test encodes or samples with all possible combinations
-of the given values for "aq-strength", "aq-mode" and "no-deblock" in the
-directory "samples.source@25:00-10.aq-strength:aq-mode:no-deblock". The samples
-are all encoded with "crf=19:me=umh", they are all 10 seconds long and start at
-25 minutes in source.mkv:
+of the given values for "subme", "deblock" and "no-fast-pskip" in the directory
+"samples.orig@25:00-1.subme:deblock:no-fast-pskip". The samples are all encoded
+with "crf=19:me=umh", they are all 10 seconds long and start at 25 minutes in
+source.mkv:
 
-    source.sample@25:00-10.crf=19:me=umh:aq-strength=0.5:aq-mode=2.mkv
-    source.sample@25:00-10.crf=19:me=umh:aq-strength=0.5:aq-mode=2:no-deblock.mkv
-    source.sample@25:00-10.crf=19:me=umh:aq-strength=0.5:aq-mode=3.mkv
-    source.sample@25:00-10.crf=19:me=umh:aq-strength=0.5:aq-mode=3:no-deblock.mkv
-    source.sample@25:00-10.crf=19:me=umh:aq-strength=1.0:aq-mode=2.mkv
-    source.sample@25:00-10.crf=19:me=umh:aq-strength=1.0:aq-mode=2:no-deblock.mkv
-    source.sample@25:00-10.crf=19:me=umh:aq-strength=1.0:aq-mode=3.mkv
-    source.sample@25:00-10.crf=19:me=umh:aq-strength=1.0:aq-mode=3:no-deblock.mkv
+    source.sample@25:00-10.crf=19:me=umh:subme=10:deblock=-2,-1.mkv
+    source.sample@25:00-10.crf=19:me=umh:subme=10:deblock=-2,-1:no-fast-pskip.mkv
+    source.sample@25:00-10.crf=19:me=umh:subme=10:deblock=-3,-3.mkv
+    source.sample@25:00-10.crf=19:me=umh:subme=10:deblock=-3,-3:no-fast-pskip.mkv
+    source.sample@25:00-10.crf=19:me=umh:subme=9:deblock=-2,-1.mkv
+    source.sample@25:00-10.crf=19:me=umh:subme=9:deblock=-2,-1:no-fast-pskip.mkv
+    source.sample@25:00-10.crf=19:me=umh:subme=9:deblock=-3,-3.mkv
+    source.sample@25:00-10.crf=19:me=umh:subme=9:deblock=-3,-3:no-fast-pskip.mkv
 
-You can provide multiple sets of sample settings to limit the number of
+By providing multiple sets of sample settings to -xs you can limit the number of
 combinations:
 
     $ {__name__} -s source.mkv -r 25:00 10 -x crf=19:me=umh samples \\
-      -xs aq-strength=0.5/1.0 aq-mode=2/3
+      -xs subme=10/11:no-deblock deblock=-2,-1/-3,-3
 
 This creates the following samples:
 
-    source.sample@25:00-10:crf=19:me=umh:aq-mode=2.mkv
-    source.sample@25:00-10:crf=19:me=umh:aq-mode=3.mkv
-    source.sample@25:00-10:crf=19:me=umh:aq-strength=0.5.mkv
-    source.sample@25:00-10:crf=19:me=umh:aq-strength=1.0.mkv
+    source.sample@25:00-10.crf=19:me=umh:deblock=-2,-1.mkv
+    source.sample@25:00-10.crf=19:me=umh:deblock=-3,-3.mkv
+    source.sample@25:00-10.crf=19:me=umh:subme=10.mkv
+    source.sample@25:00-10.crf=19:me=umh:subme=10:no-deblock.mkv
+    source.sample@25:00-10.crf=19:me=umh:subme=11.mkv
+    source.sample@25:00-10.crf=19:me=umh:subme=11:no-deblock.mkv
 
 To compare encodes, use the "compare" subcommand:
 
-    $ {__name__} -s source.mkv compare ./samples:orig@25:00-1.aq-strength:aq-mode
+    $ {__name__} -s source.mkv compare samples.orig@25:00-1.subme:deblock:no-fast-pskip
 
-This opens mpv in fullscreen mode with a playlist of samples. You can adjust the
-playlist size with the -p (--playlist-size) option. Switch between samples with
-"j" and "k". If you seek to a different time, it is preserved. (You can even
-switch while playing a sample.) You can also switch to the original source with
-"o", although seek time preservation doesn't work very well in that case.
+This opens mpv in fullscreen mode with a playlist of two samples. Switch between
+samples with "j" and "k" or toggle the original source with "o". Pick the better
+sample with "b", the worse with "w" or mark them as equal with "e". New samples
+are loaded automatically every time you make a decision. After you've rated all
+samples once, any samples that were marked as equal are loaded again. This
+process will leave you with the best sample and its settings in the end.
 
-If one sample is the best in the current playlist, press "b" to unload all other
-samples and fill the playlist again. The best sample is kept in the playlist.
+You can adjust the playlist size with the -p (--playlist-size) option if you
+want to compare more than two samples.
 
-If one sample is the worst in the current playlist, press "w" to unload that
-sample. No more samples will be added to the playlist unless there is only one
-sample left. "Shift+w" does the same thing as "w", but it also removes the
-sample from the file system.
+"Shift+w" does the same thing as "w", but it also removes the sample and its log
+file from the file system.
 
-If all samples in the current playlist are equal, press "e" to stash them. The
-playlist is filled with new samples. Once you have seen all samples at least
-once, previously stashed samples are loaded again.
+Show and hide the playlist overlay with "`".
 
-You can show/hide the playlist with "`".
+Some final notes you might find useful:
+
+- Choose your sample range carefully. It should be representative of the full
+  video. 10 seconds or less is fine to check something quickly, but use 60
+  seconds or more for fine tuning.
+
+- Increasing gamma with "6" to around 10 to 15 makes differences more obvious.
+  (Decrease with "5".) Don't go too high or you'll watch pixels dance that
+  nobody else will ever see.
+
+- Try switching between samples while playing. txs should preserve playback
+  time, but there is a small delay when mpv seeks.
+
+- You can seek forward and backward by single frames with "." and ",".
 '''.strip()
 
 

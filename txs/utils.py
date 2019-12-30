@@ -83,10 +83,10 @@ def mkdir(path):
 
 def cleanup(*filepaths):
     for filepath in filepaths:
-        for file in (filepath, logfile(filepath)):
-            if os.path.exists(filepath):
-                print(f'Deleting {filepath}')
-                os.remove(filepath)
+        for f in (filepath, logfile(filepath)):
+            if os.path.exists(f):
+                print(f'Deleting {f}')
+                os.remove(f)
 
 
 def parse_settings(*strings, default_value=None):

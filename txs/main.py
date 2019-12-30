@@ -229,7 +229,7 @@ def _samples(args):
     estimates_file = os.path.join(samples_dir, args.estimates_file)
     try:
         for i,diff_settings in enumerate(sample_settings, start=1):
-            settings = {**base_settings, **diff_settings}
+            settings = utils.combine_dicts(base_settings, diff_settings)
             dest = os.path.join(samples_dir,
                                 (f'{title}.sample@'
                                  f'{"-".join(args.range)}.'

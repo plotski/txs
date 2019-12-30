@@ -66,6 +66,22 @@ def bytes2str(bytes):
             return f'{round(bytes / size, 2):5.2f} {unit}B'
     return f'{bytes} B'
 
+def combine_dicts(*dcts):
+    # {**a, **b} doesn't cut it because the order of the keys in later dicts
+    # trumps the order of the same keys in earlier dicts.
+    # >>> a = {'me': 'umh', 'bframes': 5}
+    # >>> b = {'crf': 20, 'bframes': 5}
+    # >>> {**a, **b}
+    # {'me': 'umh', 'bframes': 5, 'crf': 20}
+    # 'crf' and 'bframes' were flipped, bu we need to maintain key order of b or
+    # the Lua script won't find the estimates.
+    combined = {}
+    for d in dcts:
+        for k in d:
+            combined.pop(k, None)
+        combined.update(d)
+    return combined
+
 def logfile(filepath):
     return os.path.splitext(filepath)[0] + '.log'
 

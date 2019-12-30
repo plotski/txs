@@ -207,7 +207,10 @@ def run():
     argparser_bframes.set_defaults(func=_bframes)
 
     args = argparser.parse_args()
-    args.func(args)
+    if hasattr(args, 'func'):
+        args.func(args)
+    else:
+        argparser.print_help()
 
 def _samples(args):
     base_settings = utils.parse_settings(args.x264_settings)

@@ -57,10 +57,18 @@ def _as_json(string):
         utils.error(pprint.pformat(string))
         utils.croak(e)
 
+def _get_source(path):
+    if os.path.isfile(path):
+        return f'file:{path}'
+    elif os.path.isdir(path):
+        if os.path.exists(os.path.join(path, 'BDMV')):
+            return f'bluray:{path}'
+    return path
+
 def _get_video_info(filepath):
     proc = _run(FFPROBE, '-hide_banner',
                 '-show_format', '-show_streams',
-                '-of', 'json', filepath)
+                '-of', 'json', _get_source(filepath))
     return _as_json(proc.stdout.read())
 
 def duration(filepath):
@@ -75,7 +83,7 @@ def encode(source, dest, settings=None, start=None, stop=None, topic=None, creat
         env['FFREPORT'] = 'file=%s:level=40' % (utils.logfile(dest).replace(':', '\\:'),)
     if start is not None:
         cmd.extend(('-ss', start))
-    cmd.extend(('-i', f'file:{source}'))
+    cmd.extend(('-i', _get_source(source)))
     if stop is not None:
         cmd.extend(('-t', stop))
     if settings is not None:

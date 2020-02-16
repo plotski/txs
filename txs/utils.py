@@ -275,7 +275,7 @@ def compare_samples(sample_dir, debug=None, playlist_size=None, font_size=None, 
         croak(f'Cannot find {__name__}-compare.lua')
 
     cmd = [MPV, '--idle']
-    cmd.extend(('--script', script_path))
+    cmd.append(f'--script={script_path}')
     scriptopts = []
     if debug:
         scriptopts.append(f'{__name__}-debug={"yes" if debug else "no"}')

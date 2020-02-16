@@ -1,3 +1,10 @@
+2020-02-16 0.1.0
+  * Fix mpv error "Error parsing commandline option sub-file: option requires
+    parameter" due to mpv 0.32 demanding arguments as "--option=parameter"
+  * Add support for BluRay directories as source: directories with a "BDMV"
+    subdirectory are passed as "bluray:<path>" to ffmpeg
+
+
 2019-12-30 0.0.3
   * Fix syntax error in setup.py
   * Print help if no arguments are given

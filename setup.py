@@ -4,12 +4,12 @@ import re
 def get_var(name):
     with open('txs/__init__.py') as f:
         content = f.read()
-        match = re.search(rf'''^__{name}__\s*=\s*['"]([^'"]*)['"]''',
+        match = re.search(rf'''^{name}\s*=\s*['"]([^'"]*)['"]''',
                           content, re.MULTILINE)
         if match:
             return match.group(1)
         else:
-            raise RuntimeError('Unable to find __version__')
+            raise RuntimeError('Unable to find __{name}__')
 
 setup(
     name='txs',

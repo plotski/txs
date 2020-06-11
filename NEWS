@@ -1,3 +1,7 @@
+2020-06-11 0.1.1
+  * Fix potential installation issue due to importing txs during installation
+
+
 2020-02-16 0.1.0
   * Fix mpv error "Error parsing commandline option sub-file: option requires
     parameter" due to mpv 0.32 demanding arguments as "--option=parameter"

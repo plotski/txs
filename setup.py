@@ -9,7 +9,7 @@ def get_var(name):
         if match:
             return match.group(1)
         else:
-            raise RuntimeError('Unable to find __{name}__')
+            raise RuntimeError(f'Unable to find {name}')
 
 setup(
     name='txs',

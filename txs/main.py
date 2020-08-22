@@ -69,6 +69,8 @@ This creates the following samples:
     source.sample@25:00-10.crf=19:me=umh:subme=11.mkv
     source.sample@25:00-10.crf=19:me=umh:subme=11:no-deblock.mkv
 
+Use --dry-run or -d to only print the generated settings for each sample.
+
 To compare encodes, use the "compare" subcommand:
 
     $ {__name__} -s source.mkv compare samples.orig@25:00-1.subme:deblock:no-fast-pskip

@@ -120,6 +120,8 @@ def run():
     argparser.add_argument('-x', '--x264-settings', default='',
                            help=('Colon-separated x264 settings (colons in values must be escaped);'
                                  'subcommands may override these'))
+    argparser.add_argument('-vf', default='', metavar='FILTERS',
+                           help="Video filters passed to ffmpeg's -vf option")
     argparser.add_argument('-d', '--dry-run', action='store_true',
                            help='Only show what would be done with these arguments')
     argparser.add_argument('-o', '--overwrite', action='store_true',
@@ -233,7 +235,7 @@ def _samples(args):
         excerpt_path = os.path.join(samples_dir, f'{title}.original@{"-".join(args.range)}.mkv')
         if not os.path.exists(excerpt_path):
             try:
-                ffmpeg.encode(args.source, dest=excerpt_path,
+                ffmpeg.encode(args.source, dest=excerpt_path, vf=args.vf,
                               start=args.range[0], stop=args.range[1],
                               topic=f'  Extracting range {args.range[0]} - {args.range[1]}',
                               create_logfile=False)
@@ -256,7 +258,7 @@ def _samples(args):
                   f'{utils.settings2str(diff_settings, escape=False)}')
             if not args.dry_run and (args.overwrite or not os.path.exists(dest)):
                 start_time = time.monotonic()
-                ffmpeg.encode(excerpt_path, dest, settings, topic='  Encoding')
+                ffmpeg.encode(excerpt_path, dest, settings, vf=args.vf, topic='  Encoding')
                 enc_time = time.monotonic() - start_time
                 sample_secs = ffmpeg.duration(dest)
                 est_time = enc_time * total_secs / sample_secs
@@ -322,7 +324,7 @@ def _bframes(args):
         if not args.dry_run:
             utils.mkdir(bframes_dir)
             if args.overwrite or not os.path.exists(utils.logfile(dest)):
-                ffmpeg.encode(args.source, dest, settings,
+                ffmpeg.encode(args.source, dest, settings, vf=args.vf,
                               start=args.range[0], stop=args.range[1])
     except KeyboardInterrupt:
         print('\n')

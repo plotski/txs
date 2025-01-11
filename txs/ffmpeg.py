@@ -75,7 +75,7 @@ def duration(filepath):
     info = _get_video_info(filepath)
     return float(info['format']['duration'])
 
-def encode(source, dest, settings=None, start=None, stop=None, topic=None, create_logfile=True):
+def encode(source, dest, settings=None, vf=None, start=None, stop=None, topic=None, create_logfile=True):
     env = os.environ.copy()
     cmd = [FFMPEG, '-hide_banner', '-nostdin', '-sn', '-y']
     if create_logfile:
@@ -89,6 +89,8 @@ def encode(source, dest, settings=None, start=None, stop=None, topic=None, creat
     if settings is not None:
         cmd.extend(('-c:v', 'libx264',
                     '-x264opts', utils.settings2str(settings, escape=True)))
+        if vf:
+            cmd.extend(('-filter:v', vf))
     else:
         cmd.extend(('-c:v', 'copy'))
     cmd.extend(('-c:a', 'copy'))
